@@ -7,9 +7,9 @@ Catalog = (function() {
   }
 
   Catalog.prototype.genCatalog = function() {
-    var catAnchorNode, catNode, child, children, content, range, rootDiv, stack, subCat, _i, _len, _ref;
+    var catAnchorNode, catNode, child, children, content, range, rootDiv, stack, subCat, _i, _len;
     content = document.getElementById(this.mainId);
-    children = content.childNodes;
+    children = content.querySelectorAll('h1, h2, h3, h4, h5, h6');
     rootDiv = document.createElement('div');
     this.nodeArr = [rootDiv];
     this.targetArr = [rootDiv];
@@ -21,32 +21,30 @@ Catalog = (function() {
     ];
     for (_i = 0, _len = children.length; _i < _len; _i++) {
       child = children[_i];
-      if ((_ref = child.tagName) === 'H1' || _ref === 'H2' || _ref === 'H3' || _ref === 'H4' || _ref === 'H5' || _ref === 'H6') {
-        this.targetArr.push(child);
-        range = parseInt(child.tagName.substr(1));
-        catNode = document.createElement('li');
-        catAnchorNode = document.createElement('a');
-        catAnchorNode.innerHTML = child.innerHTML;
-        catNode.appendChild(catAnchorNode);
-        this.nodeArr.push(catNode);
-        if (range === stack[stack.length - 1].range) {
+      this.targetArr.push(child);
+      range = parseInt(child.tagName.substr(1));
+      catNode = document.createElement('li');
+      catAnchorNode = document.createElement('a');
+      catAnchorNode.innerHTML = child.innerHTML;
+      catNode.appendChild(catAnchorNode);
+      this.nodeArr.push(catNode);
+      if (range === stack[stack.length - 1].range) {
+        stack.pop();
+      } else if (range < stack[stack.length - 1].range) {
+        while (range <= stack[stack.length - 1].range) {
           stack.pop();
-        } else if (range < stack[stack.length - 1].range) {
-          while (range <= stack[stack.length - 1].range) {
-            stack.pop();
-          }
-        } else {
-          subCat = document.createElement('ul');
-          this.nodeArr[stack[stack.length - 1].node].appendChild(subCat);
         }
-        stack.push({
-          node: this.nodeArr.length - 1,
-          range: range
-        });
-        this.nodeArr[stack[stack.length - 2].node].lastChild.appendChild(catNode);
+      } else {
+        subCat = document.createElement('ul');
+        this.nodeArr[stack[stack.length - 1].node].appendChild(subCat);
       }
+      stack.push({
+        node: this.nodeArr.length - 1,
+        range: range
+      });
+      this.nodeArr[stack[stack.length - 2].node].lastChild.appendChild(catNode);
     }
-    return this.nodeArr[0];
+    return this.nodeArr[0].firstChild;
   };
 
   Catalog.prototype.each = function(fn) {
@@ -54,7 +52,7 @@ Catalog = (function() {
     targetArr = this.targetArr;
     return this.nodeArr.forEach(function(node, index, Arr) {
       if (index !== 0) {
-        return fn(node.firstChild, node.childNodes[1], targetArr[index], index);
+        return fn(node.firstChild, node.childNodes[1], targetArr[index], index - 1);
       }
     });
   };

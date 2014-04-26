@@ -1,3 +1,4 @@
+# www.imsun.net/project/catalog.js/
 class Catalog
 	constructor: (@mainId) ->
 
@@ -5,7 +6,7 @@ class Catalog
 	# @return {Element}
 	genCatalog: () ->
 		content = document.getElementById @mainId
-		children = content.childNodes
+		children = content.querySelectorAll 'h1, h2, h3, h4, h5, h6'
 		rootDiv = document.createElement 'div'
 		@nodeArr = [rootDiv]
 		@targetArr = [rootDiv]
@@ -15,33 +16,32 @@ class Catalog
 		]
 
 		for child in children
-			if child.tagName in ['H1', 'H2', 'H3', 'H4', 'H5', 'H6']
-				@targetArr.push child
-				range = parseInt child.tagName.substr 1
+			@targetArr.push child
+			range = parseInt child.tagName.substr 1
 
-				catNode = document.createElement 'li'
+			catNode = document.createElement 'li'
 
-				catAnchorNode = document.createElement 'a'
-				catAnchorNode.innerHTML = child.innerHTML
+			catAnchorNode = document.createElement 'a'
+			catAnchorNode.innerHTML = child.innerHTML
 
-				catNode.appendChild catAnchorNode
+			catNode.appendChild catAnchorNode
 
-				@nodeArr.push catNode
+			@nodeArr.push catNode
 
-				if range is stack[stack.length - 1].range
-					stack.pop()
-				else if range < stack[stack.length - 1].range
-					stack.pop() while range <= stack[stack.length - 1].range
-				else
-					subCat = document.createElement 'ul'
-					@nodeArr[stack[stack.length - 1].node].appendChild subCat
-				stack.push
-					node: @nodeArr.length - 1
-					range: range
+			if range is stack[stack.length - 1].range
+				stack.pop()
+			else if range < stack[stack.length - 1].range
+				stack.pop() while range <= stack[stack.length - 1].range
+			else
+				subCat = document.createElement 'ul'
+				@nodeArr[stack[stack.length - 1].node].appendChild subCat
+			stack.push
+				node: @nodeArr.length - 1
+				range: range
 
-				@nodeArr[stack[stack.length - 2].node].lastChild.appendChild catNode
+			@nodeArr[stack[stack.length - 2].node].lastChild.appendChild catNode
 
-		@nodeArr[0]
+		@nodeArr[0].firstChild
 
 	# Process every row in catalog
 	# @param {Function} fn 
@@ -53,4 +53,4 @@ class Catalog
 	each: (fn) ->
 		targetArr = @targetArr
 		@nodeArr.forEach (node, index, Arr) ->
-			fn node.firstChild, node.childNodes[1], targetArr[index], index if index isnt 0
+			fn node.firstChild, node.childNodes[1], targetArr[index], index - 1 if index isnt 0
